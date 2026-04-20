@@ -179,6 +179,7 @@ export default function Requests() {
           {tabs.map(tab => (
             <button
               key={tab.id}
+              type="button"
               onClick={() => handleTabChange(tab.id)}
               className={`
                 flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap
@@ -203,7 +204,7 @@ export default function Requests() {
               className="w-full bg-white border border-surface-container-high rounded-2xl py-2.5 pl-11 pr-4 text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
             />
           </div>
-        <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+        <button type="button" className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
             <FileText className="w-4 h-4" />
             Báo cáo
           </button>
@@ -411,15 +412,15 @@ function RequestRow({ req, collectors, onStatus, onAssign, onView, onEdit, onOpe
       <div className="col-span-2 flex items-center justify-center gap-2">
         {req.status === 'Pending' && (
           <div className="flex gap-1.5">
-            <button onClick={(e) => { e.stopPropagation(); onOpenCoordination(); }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/10 active:scale-95 transition-all flex items-center gap-1">Điều phối</button>
-            <button onClick={(e) => { e.stopPropagation(); onCancel(); }} className="px-4 py-2 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-500/10 active:scale-95 transition-all">Hủy</button>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onOpenCoordination(); }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/10 active:scale-95 transition-all flex items-center gap-1">Điều phối</button>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onCancel(); }} className="px-4 py-2 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-500/10 active:scale-95 transition-all">Hủy</button>
           </div>
         )}
         {req.status === 'Assigned' && (
-           <button onClick={(e) => { e.stopPropagation(); onOpenCoordination(); }} className="px-4 py-2 border border-indigo-600 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-indigo-50 transition-colors">Sửa điều phối</button>
+           <button type="button" onClick={(e) => { e.stopPropagation(); onOpenCoordination(); }} className="px-4 py-2 border border-indigo-600 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-indigo-50 transition-colors">Sửa điều phối</button>
         )}
         {(req.status === 'Accepted' || req.status === 'Collected') && (
-          <button onClick={(e) => { e.stopPropagation(); onEdit(); }} className="px-5 py-2 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-amber-500/20"><Edit className="w-3.5 h-3.5" /> Sửa</button>
+          <button type="button" onClick={(e) => { e.stopPropagation(); onEdit(); }} className="px-5 py-2 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-amber-500/20"><Edit className="w-3.5 h-3.5" /> Sửa</button>
         )}
         {req.status === 'Cancelled' && (
           <div className="flex items-center gap-2 px-5 py-2 bg-on-surface/5 text-on-surface-variant/20 rounded-xl border border-dashed border-on-surface/10 grayscale">
@@ -531,6 +532,10 @@ function CoordinationDrawer({ req, onAssign, onClose }) {
 }
 
 function RequestDetailModal({ req, onClose, collectors, onAssign, onStatus, onCancel, readOnly = false }) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const images = req.images || req.imageUrls || [];
+  console.log("Images in ReportModal:", images);
+
   const currentStatus = (() => {
     switch(req.status) {
       case 'Pending': return { color: 'text-orange-500 bg-orange-50', icon: Clock, label: 'Mới' };
@@ -552,22 +557,44 @@ function RequestDetailModal({ req, onClose, collectors, onAssign, onStatus, onCa
         className="bg-white w-full max-w-6xl overflow-hidden rounded-[3rem] shadow-2xl relative z-10 flex h-auto max-h-[85vh]"
       >
         {/* Left: Image Section */}
-        <div className="w-4/12 bg-surface-container-high relative flex-shrink-0">
-          {req.images?.[0] ? (
-            <img src={req.images[0]} alt="Waste" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-surface-container-highest text-on-surface-variant/20">
-              <Package className="w-16 h-16 mb-2" />
-              <p className="text-[10px] font-black uppercase tracking-widest leading-none">Không có hình ảnh</p>
-            </div>
-          )}
-          <div className="absolute top-6 left-6">
-            <div className="px-4 py-2 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl flex items-center gap-2 border border-white/50">
-               <div className="w-2 h-2 rounded-full bg-primary" />
-               <span className="text-[10px] font-black text-on-surface uppercase tracking-widest font-mono">#{req.id}</span>
+        <div className="w-4/12 bg-surface-container-high relative flex-shrink-0 flex flex-col">
+          <div className="flex-1 relative bg-black/5">
+            {images.length > 0 ? (
+              <img src={`${images[currentImageIndex]}?t=${Date.now()}`} alt="Waste" className="absolute inset-0 w-full h-full object-cover" />
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-container-highest text-on-surface-variant/20">
+                <Package className="w-16 h-16 mb-2" />
+                <p className="text-[10px] font-black uppercase tracking-widest leading-none">Không có hình ảnh</p>
+              </div>
+            )}
+            <div className="absolute top-6 left-6">
+              <div className="px-4 py-2 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl flex items-center gap-2 border border-white/50 z-10">
+                 <div className="w-2 h-2 rounded-full bg-primary" />
+                 <span className="text-[10px] font-black text-on-surface uppercase tracking-widest font-mono">#{req.id}</span>
+              </div>
             </div>
           </div>
-</div>
+          
+          {/* Thumbnails below the main image if there are multiple */}
+          {images.length > 1 && (
+            <div className="bg-surface-container-low border-t border-surface-container p-4 flex gap-3 overflow-x-auto no-scrollbar shadow-inner shrink-0">
+              {images.map((img, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setCurrentImageIndex(idx)}
+                  className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
+                    currentImageIndex === idx 
+                      ? 'border-primary ring-2 ring-primary/20 shadow-lg scale-105 z-10' 
+                      : 'border-transparent opacity-60 hover:opacity-100'
+                  }`}
+                >
+                  <img src={`${img}?t=${Date.now()}`} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Right: Content Section */}
         <div className="flex-1 flex flex-col min-w-0">
@@ -679,6 +706,7 @@ function RequestDetailModal({ req, onClose, collectors, onAssign, onStatus, onCa
                       ].map(s => (
                         <button 
                           key={s.id} 
+                          type="button"
                           onClick={() => onStatus(req.id, s.id)}
                           className={`w-full py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
                             req.status === s.id 
@@ -722,6 +750,7 @@ function RequestDetailModal({ req, onClose, collectors, onAssign, onStatus, onCa
                       return filtered.map(c => (
                         <button 
                           key={c.userId || c.id} 
+                          type="button"
                           onClick={() => !readOnly && onAssign(req.id, c.userId || c.id)}
                           className={`p-3 rounded-[1.8rem] flex items-center gap-3 border-2 transition-all group ${
                             req.collectorId === (c.userId || c.id)
@@ -753,12 +782,13 @@ function RequestDetailModal({ req, onClose, collectors, onAssign, onStatus, onCa
           <div className="p-10 pt-4 bg-white/50 border-t border-on-surface/5 flex justify-between items-center">
              <div className="flex items-center gap-6">
                 {!readOnly && req.status === 'Pending' && (
-                  <button onClick={() => onStatus(req.id, 'Accepted')} className="px-10 bg-primary text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all flex items-center gap-3">
+                  <button type="button" onClick={() => onStatus(req.id, 'Accepted')} className="px-10 bg-primary text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all flex items-center gap-3">
                     Tiếp nhận hồ sơ <ArrowRight className="w-4 h-4" />
                   </button>
                 )}
                 {!readOnly && req.status !== 'Pending' && req.status !== 'Cancelled' && req.status !== 'Collected' && (
                   <button 
+                    type="button"
                     onClick={() => onCancel(req)} 
                     className="px-6 py-4 bg-red-50 text-red-500 rounded-2xl font-black uppercase tracking-widest hover:bg-red-100 transition-all text-[10px]"
                   >
@@ -769,16 +799,16 @@ function RequestDetailModal({ req, onClose, collectors, onAssign, onStatus, onCa
              
              <div className="flex gap-4">
                 {!readOnly && req.status === 'Pending' && (
-                  <button onClick={() => onCancel(req)} className="px-8 bg-red-50 text-red-500 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-red-100 transition-all">Hủy đơn</button>
+                  <button type="button" onClick={() => onCancel(req)} className="px-8 bg-red-50 text-red-500 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-red-100 transition-all">Hủy đơn</button>
                 )}
                 
                 {!readOnly && req.status !== 'Pending' && req.status !== 'Cancelled' && (
-                  <button onClick={onClose} className="px-12 bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all">
+                  <button type="button" onClick={onClose} className="px-12 bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all">
                     Xác nhận
                   </button>
                 )}
 
-                <button onClick={onClose} className="px-10 py-4 bg-surface-container-high text-on-surface-variant rounded-2xl font-black uppercase tracking-widest hover:bg-surface-container-highest transition-all">
+                <button type="button" onClick={onClose} className="px-10 py-4 bg-surface-container-high text-on-surface-variant rounded-2xl font-black uppercase tracking-widest hover:bg-surface-container-highest transition-all">
                   {req.status === 'Pending' ? 'Đóng' : 'Quay lại'}
                 </button>
              </div>
