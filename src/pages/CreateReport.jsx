@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { getUser } from '../lib/auth';
 import { createWasteReport, getWasteReportCategories } from '../api/WasteReportapi';
+import { getCapacity } from '../api/areaApi';
 
 const MAX_REPORT_TOTAL_KG = 10;
 const MAX_REPORT_IMAGES = 3;
@@ -48,28 +49,38 @@ export default function CreateReport() {
     const [categoryOptions, setCategoryOptions] = useState([]);
     const [loadingCategories, setLoadingCategories] = useState(true);
     const [categoryError, setCategoryError] = useState('');
+    const [districts, setDistricts] = useState([]);
+    const [selectedDistrictId, setSelectedDistrictId] = useState('');
+    const [selectedWardId, setSelectedWardId] = useState('');
+    const [streetAddress, setStreetAddress] = useState('');
 
     useEffect(() => {
         let isMounted = true;
 
-        async function loadCategories() {
+        async function loadData() {
             setLoadingCategories(true);
             setCategoryError('');
             try {
-                const data = await getWasteReportCategories();
+                const [catData, areaData] = await Promise.all([
+                    getWasteReportCategories(),
+                    getCapacity()
+                ]);
+                
                 if (!isMounted) return;
-                const normalized = data
+                
+                const normalizedCats = catData
                     .map((item) => ({
                         id: item.id,
                         name: item.name ?? '',
                         pointsPerKg: Number(item.pointsPerKg) || 0,
                     }))
                     .filter((item) => item.id && item.name);
-                setCategoryOptions(normalized);
+                setCategoryOptions(normalizedCats);
+                
+                setDistricts(areaData.areas || []);
             } catch (error) {
                 if (!isMounted) return;
-                setCategoryError(error?.message || 'Không thể tải thể loại rác.');
-                setCategoryOptions([]);
+                setCategoryError(error?.message || 'Không thể tải dữ liệu ban đầu.');
             } finally {
                 if (isMounted) {
                     setLoadingCategories(false);
@@ -77,7 +88,7 @@ export default function CreateReport() {
             }
         }
 
-        loadCategories();
+        loadData();
         return () => {
             isMounted = false;
         };
@@ -196,7 +207,8 @@ export default function CreateReport() {
             const payload = {
                 title: title.trim(),
                 description: description.trim(),
-                locationText: address.trim(),
+                locationText: streetAddress.trim(),
+                wardId: selectedWardId ? Number(selectedWardId) : null,
                 wasteCategoryIds: selectedItems.map((item) => item.categoryId),
                 estimatedWeightKgs: selectedItems.map((item) => item.quantityKg),
                 images: reportImages.files,
@@ -514,22 +526,56 @@ export default function CreateReport() {
                                         </div>
                                     )}
 
-                                    <div className="space-y-2">
-                                        <label
-                                            htmlFor={`${formId}-address`}
-                                            className="flex items-center gap-2 text-sm font-bold text-on-surface"
-                                        >
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2 text-sm font-bold text-on-surface">
                                             <MapPin className="w-4 h-4 text-primary" />
-                                            Địa chỉ
-                                        </label>
-                                        <input
-                                            id={`${formId}-address`}
-                                            type="text"
-                                            value={address}
-                                            onChange={(e) => setAddress(e.target.value)}
-                                            placeholder="VD: Quận 3, TP.HCM — gần địa danh / hẻm"
-                                            className="w-full rounded-2xl border border-surface-container-high bg-surface px-4 py-3 text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary/35 focus:border-primary transition-shadow"
-                                        />
+                                            Địa chỉ thu gom
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-on-surface-variant">Quận / Huyện</label>
+                                                <select
+                                                    value={selectedDistrictId}
+                                                    onChange={(e) => {
+                                                        setSelectedDistrictId(e.target.value);
+                                                        setSelectedWardId('');
+                                                    }}
+                                                    className="w-full rounded-2xl border border-surface-container-high bg-surface px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/35 focus:border-primary"
+                                                >
+                                                    <option value="">Chọn Quận/Huyện</option>
+                                                    {districts.map(d => (
+                                                        <option key={d.id} value={d.id}>{d.district}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-on-surface-variant">Phường / Xã</label>
+                                                <select
+                                                    value={selectedWardId}
+                                                    onChange={(e) => setSelectedWardId(e.target.value)}
+                                                    disabled={!selectedDistrictId}
+                                                    className="w-full rounded-2xl border border-surface-container-high bg-surface px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/35 focus:border-primary disabled:opacity-50"
+                                                >
+                                                    <option value="">Chọn Phường/Xã</option>
+                                                    {districts.find(d => String(d.id) === String(selectedDistrictId))?.wards.map(w => (
+                                                        <option key={w.id} value={w.id}>{w.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-on-surface-variant">Số nhà, tên đường, hẻm...</label>
+                                            <input
+                                                type="text"
+                                                value={streetAddress}
+                                                onChange={(e) => setStreetAddress(e.target.value)}
+                                                placeholder="VD: 123 Nguyễn Huệ, hẻm 4..."
+                                                className="w-full rounded-2xl border border-surface-container-high bg-surface px-4 py-3 text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary/35 focus:border-primary transition-shadow"
+                                            />
+                                        </div>
                                     </div>
 
                                     <div className="space-y-2">

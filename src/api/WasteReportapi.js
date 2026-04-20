@@ -61,6 +61,9 @@ export async function createWasteReport(payload) {
   formData.append('title', payload.title ?? '');
   formData.append('description', payload.description ?? '');
   formData.append('locationText', payload.locationText ?? '');
+  if (payload.wardId) {
+    formData.append('wardId', String(payload.wardId));
+  }
 
   (payload.wasteCategoryIds ?? []).forEach((id, index) => {
     formData.append(`wasteCategoryIds[${index}]`, String(id));
@@ -135,6 +138,9 @@ export async function updateWasteReport(id, payload) {
   formData.append('title', payload?.title ?? '');
   formData.append('description', payload?.description ?? '');
   formData.append('locationText', payload?.locationText ?? '');
+  if (payload?.wardId) {
+    formData.append('wardId', String(payload.wardId));
+  }
 
   (payload?.wasteCategoryIds ?? []).forEach((categoryId, index) => {
     formData.append(`wasteCategoryIds[${index}]`, String(categoryId));

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getCapacity, getRequests } from '../../api/areaApi';
+import { getCapacity } from '../../api/areaApi';
+import { getAllWasteReports } from '../../api/WasteReportapi';
 import { Activity, PackageCheck, AlertCircle, Weight } from 'lucide-react';
 
 export default function Dashboard() {
@@ -9,7 +10,7 @@ export default function Dashboard() {
   useEffect(() => {
     async function load() {
       try {
-        const [cap, reqs] = await Promise.all([getCapacity(), getRequests()]);
+        const [cap, reqs] = await Promise.all([getCapacity(), getAllWasteReports()]);
         setData({ capacity: cap, requests: reqs });
       } catch (e) {
         console.error(e);
@@ -56,8 +57,10 @@ export default function Dashboard() {
             {requests.slice(0, 5).map(req => (
               <div key={req.id} className="flex items-center justify-between p-4 bg-surface-container-low rounded-2xl hover:bg-surface-container transition-colors">
                 <div>
-                  <p className="font-bold text-on-surface">{req.citizenName}</p>
-                  <p className="text-sm text-on-surface-variant">{req.wasteType} • {req.weightKg}kg • {req.address}</p>
+                  <p className="font-bold text-on-surface">{req.citizenName || 'Người dân'}</p>
+                  <p className="text-sm text-on-surface-variant">
+                    {req.wasteType} • {req.weightKg || req.actualTotalWeightKg || 0}kg • {req.locationText || req.address}
+                  </p>
                 </div>
                 <span className={`px-3 py-1 text-xs font-bold uppercase rounded-full ${
                   req.status === 'Pending' ? 'bg-error/10 text-error' :

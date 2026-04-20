@@ -60,9 +60,10 @@ export default function Requests() {
 
       setRequests(reqs);
       setCollectors(mappedCollectors);
-      } catch (err) {
-      console.error("Failed to load requests", err);
-      // alert("Không thể kết nối tới máy chủ API. Vui lòng kiểm tra lại Backend!");
+      console.log("Loaded Waste Reports:", reqs);
+    } catch (err) {
+      console.error("Failed to load requests:", err);
+      // alert("Lỗi khi tải danh sách: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -361,7 +362,7 @@ function RequestRow({ req, collectors, onStatus, onAssign, onView, onEdit, onOpe
             </h4>
             <div className="flex items-center gap-1 text-[10px] font-bold text-on-surface-variant/40 truncate">
               <MapPin className="w-3 h-3" />
-              {req.address || 'Không rõ địa chỉ'}
+              {req.address || req.locationText || 'Không rõ địa chỉ'}
             </div>
           </div>
         </div>
@@ -471,8 +472,8 @@ function CoordinationDrawer({ req, onAssign, onClose }) {
              <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black shadow-inner">{(req.citizenName || "?").charAt(0)}</div>
                 <div>
-                   <h4 className="font-black text-on-surface leading-tight mb-1">{req.citizenName}</h4>
-                   <p className="text-[10px] font-bold text-on-surface-variant/50 flex items-center gap-1"><MapPin className="w-3 h-3 text-primary" />{req.address}</p>
+                   <h4 className="font-black text-on-surface leading-tight mb-1">{req.citizenName || 'Người dân'}</h4>
+                   <p className="text-[10px] font-bold text-on-surface-variant/50 flex items-center gap-1"><MapPin className="w-3 h-3 text-primary" />{req.address || req.locationText}</p>
                 </div>
              </div>
           </div>
@@ -575,7 +576,7 @@ function RequestDetailModal({ req, onClose, collectors, onAssign, onStatus, onCa
               <h2 className="text-3xl font-black text-on-surface leading-tight mb-2 truncate">{req.citizenName}</h2>
               <div className="flex items-center gap-2 text-on-surface-variant/60 font-bold text-sm truncate">
                 <MapPin className="w-4 h-4 text-primary" />
-                {req.address}
+                {req.address || req.locationText}
               </div>
             </div>
             
