@@ -141,10 +141,11 @@ export default function CollectorLayout() {
         <div className="mt-auto border-t border-surface-container-highest p-4">
           <div className="flex items-center gap-3">
             <img
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzVeS9GDQVWYn_jFQbpMq33BS816uiB1_KbAdgp_7-yZG00XiQo87op11mXsfg0CytlpU81KsNpLDzPDAhDpFVs5a9E9A4_DajS1JIZ9RafPp-p0O_W4EaBhyoO4WYn9t0Bx6qNZMoeZrz9G-Mp3_6iMX2tEZfrDRQIa4MugJyesj1zADiQ5N8WvDEhGOI0j_me6c35BL2Q5z8VCgnnUbFWhWbfaI-zCq4YzLz-Q1UT-MD0F97xwdiKI4bfEF_IN5XFSWvZCISNEw6"
+              src={(user?.avatarUrl || user?.AvatarUrl || user?.avatar) ? `${user?.avatarUrl || user?.AvatarUrl || user?.avatar}${ (user?.avatarUrl || user?.AvatarUrl || user?.avatar).includes('?') ? '&' : '?' }t=${new Date().getTime()}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`}
               alt="User profile"
               className="w-10 h-10 rounded-full object-cover ring-2 ring-primary-container/30"
               referrerPolicy="no-referrer"
+              key={user?.avatarUrl || user?.AvatarUrl}
             />
             <div className="min-w-0">
               <p className="text-sm font-extrabold text-on-surface truncate">

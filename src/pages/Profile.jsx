@@ -131,22 +131,22 @@ export default function Profile() {
       localStorage.setItem('ecosort_user', JSON.stringify(updatedUser));
       window.dispatchEvent(new Event('ecosort_auth_changed'));
       
-      setAvatarFile(null);
-      if (avatarPreview) URL.revokeObjectURL(avatarPreview);
-      setAvatarPreview(null);
-      
-      setIsEditing(false);
       setAlertConfig({
         isOpen: true,
         title: "Thành công",
-        message: "Thông tin hồ sơ của bạn đã được cập nhật.",
+        message: "Hồ sơ của bạn đã được cập nhật thành công.",
         type: "success"
       });
+      setIsEditing(false);
+      setAvatarFile(null);
+      if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+      setAvatarPreview(null);
     } catch (err) {
+      console.error("Profile update error:", err);
       setAlertConfig({
         isOpen: true,
-        title: "Thất bại",
-        message: err.message || "Không thể cập nhật hồ sơ lúc này.",
+        title: "Lỗi cập nhật",
+        message: err.message || "Đã có lỗi xảy ra khi lưu hồ sơ. Vui lòng thử lại.",
         type: "error"
       });
     } finally {
@@ -235,7 +235,7 @@ export default function Profile() {
                  onClick={() => isEditing && fileInputRef.current?.click()}
                >
                   <img 
-                    src={avatarPreview || user.avatar || user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`} 
+                    src={avatarPreview || ((user?.avatarUrl || user?.AvatarUrl || user?.avatar) ? `${user?.avatarUrl || user?.AvatarUrl || user?.avatar}${ (user?.avatarUrl || user?.AvatarUrl || user?.avatar).includes('?') ? '&' : '?' }t=${new Date().getTime()}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`)} 
                     alt="Profile" 
                     className="w-full h-full object-cover"
                   />
