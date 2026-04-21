@@ -1,5 +1,28 @@
-import api from './api';
+import { getApiBaseUrl, getToken } from '../lib/auth';
 
+async function apiFetch(endpoint, options = {}) {
+  const token = getToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
+  };
+
+  const response = await fetch(`${getApiBaseUrl()}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  if (response.status === 204) {
+    return null;
+  }
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Lỗi kết nối API báo cáo rác');
+  }
+  return data;
+}
 const processNotification = (apiNotif) => ({
     id: apiNotif.id,
     title: apiNotif.title,
@@ -42,23 +65,23 @@ const formatTimeAgo = (dateString) => {
 
 const notificationApi = {
     getNotifications: async (limit = 50) => {
-        const response = await api.get(`/notifications?limit=${limit}`);
-        return response.data.map(processNotification);
+        const responseData = await apiFetch(`/api/notifications?limit=${limit}`);
+        return responseData.map(processNotification);
     },
 
     getUnreadCount: async () => {
-        const response = await api.get('/notifications/unread-count');
-        return response.data.count;
+        const responseData = await apiFetch('/api/notifications/unread-count');
+        return responseData.count;
     },
 
     markAsRead: async (id) => {
-        const response = await api.patch(`/notifications/${id}/read`);
-        return response.data;
+        const responseData = await apiFetch(`/api/notifications/${id}/read`, { method: 'PATCH' });
+        return responseData;
     },
 
     markAllAsRead: async () => {
-        const response = await api.patch('/notifications/read-all');
-        return response.data;
+        const responseData = await apiFetch('/api/notifications/read-all', { method: 'PATCH' });
+        return responseData;
     }
 };
 
