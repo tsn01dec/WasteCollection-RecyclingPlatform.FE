@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { clearAuth, getUser } from '../../lib/auth';
+import NotificationBell from '../../components/NotificationBell';
 
 export default function EnterpriseLayout() {
   const navigate = useNavigate();
@@ -252,6 +253,11 @@ export default function EnterpriseLayout() {
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto bg-surface relative min-h-0">
+        {/* Floating Top Right Notification Bell */}
+        <div className="absolute top-6 right-6 lg:right-12 z-50">
+          <NotificationBell />
+        </div>
+
         {/* Decorative Grid Background */}
         <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" style={{
           backgroundImage: 'radial-gradient(circle at 2px 2px, black 1px, transparent 0)',
