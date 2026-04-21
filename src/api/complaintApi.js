@@ -96,3 +96,13 @@ export async function updateComplaintStatus(id, { status, adminNote }) {
     body: JSON.stringify({ status, adminNote }),
   });
 }
+
+/**
+ * GET /api/feedback
+ * Lấy danh sách tất cả khiếu nại (Administrator / RecyclingEnterprise).
+ */
+export async function getAllComplaints(status) {
+  const query = status && status !== 'all' ? `?status=${encodeURIComponent(status)}` : '';
+  const data = await apiFetch(`/api/feedback${query}`);
+  return Array.isArray(data) ? data : [];
+}

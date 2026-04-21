@@ -402,14 +402,8 @@ export default function App() {
               </div>
             }
           />
-          <Route
-            path="feedback"
-            element={
-              <div className="p-10 text-center font-bold opacity-50">
-                Quản lí feedback đang được phát triển...
-              </div>
-            }
-          />
+          <Route path="feedback" element={<AdminFeedback />} />
+          <Route path="feedback/:id" element={<AdminFeedbackDetail />} />
           <Route path="rewards" element={<RewardManagement />} />
           <Route path="vouchers" element={<VoucherManagement />} />
         </Route>
