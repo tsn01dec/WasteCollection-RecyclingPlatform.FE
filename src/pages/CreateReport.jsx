@@ -44,7 +44,6 @@ export default function CreateReport() {
     const [categoryDetails, setCategoryDetails] = useState({});
     const [reportImages, setReportImages] = useState({ files: [], previews: [] });
     const [submitting, setSubmitting] = useState(false);
-    const [showPhoneToast, setShowPhoneToast] = useState(false);
     const [submitToast, setSubmitToast] = useState(null);
     const [categoryOptions, setCategoryOptions] = useState([]);
     const [loadingCategories, setLoadingCategories] = useState(true);
@@ -100,15 +99,7 @@ export default function CreateReport() {
         };
     }, [reportImages]);
 
-    useEffect(() => {
-        if (!showPhoneToast) return undefined;
 
-        const timer = window.setTimeout(() => {
-            setShowPhoneToast(false);
-        }, 3200);
-
-        return () => window.clearTimeout(timer);
-    }, [showPhoneToast]);
 
     useEffect(() => {
         if (!submitToast) return undefined;
@@ -172,14 +163,6 @@ export default function CreateReport() {
     async function onSubmit(e) {
         e.preventDefault();
         if (!title.trim() || !description.trim()) return;
-
-        const user = getUser();
-        const userPhone = user?.phone ?? user?.phoneNumber ?? user?.PhoneNumber ?? '';
-        const hasPhone = Boolean(String(userPhone).trim());
-        if (!hasPhone) {
-            setShowPhoneToast(true);
-            return;
-        }
 
         const selectedItems = getReportLineItems(categories, categoryDetails);
 
@@ -314,22 +297,7 @@ export default function CreateReport() {
 
             <div className="relative z-0 px-4 sm:px-6 md:px-10 py-10 sm:py-14">
                 <div className="mx-auto w-full max-w-5xl space-y-6">
-                    {showPhoneToast && (
-                        <div
-                            role="alert"
-                            className="fixed right-4 top-24 z-[80] w-[min(92vw,24rem)] rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 shadow-xl"
-                        >
-                            <div className="flex items-start gap-3">
-                                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
-                                <div className="space-y-1">
-                                    <p className="text-sm font-bold">Thiếu số điện thoại</p>
-                                    <p className="text-xs leading-relaxed text-amber-800">
-                                        Vui lòng cập nhật số điện thoại trong trang Profile trước khi tạo báo cáo.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+
                     {submitToast && (
                         <div
                             role="status"
